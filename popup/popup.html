@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Remote</title>
+  <style>
+    :root { color-scheme: dark; --mint:#69f5d1; --text:#edf4ff; --muted:#a0adc5; }
+    * { box-sizing:border-box; }
+    body {
+      width:370px; margin:0; padding:22px; position:relative; isolation:isolate;
+      font-family:Inter,"Segoe UI",Arial,sans-serif; color:var(--text);
+      background:radial-gradient(ellipse at 0% 5%,#193d47 0,transparent 52%),
+                 radial-gradient(ellipse at 100% 70%,#302047 0,transparent 55%),#0b1020;
+    }
+    body::before {
+      content:""; position:absolute; z-index:-1; inset:12px; border-radius:28px;
+      border:1px solid rgba(255,255,255,.045); pointer-events:none;
+    }
+    .brand { display:flex; align-items:center; gap:11px; margin-bottom:24px; }
+    .brand-mark {
+      width:36px; height:36px; display:grid; place-items:center; border-radius:12px;
+      color:var(--mint); background:#193b3c; border:1px solid #69f5d138;
+      box-shadow:0 0 22px #69f5d10d;
+    }
+    h2 { margin:0; font-size:17px; font-weight:650; letter-spacing:-.45px; }
+    .brand-sub { margin:4px 0 0; color:var(--muted); font-size:10px; letter-spacing:1.6px; text-transform:uppercase; }
+    .card {
+      position:relative; padding:20px; margin-bottom:8px; border-radius:22px;
+      background:linear-gradient(135deg,#ffffff0f,#ffffff04),#11192bd9;
+      border:1px solid #ffffff1c; backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+      box-shadow:0 18px 40px #00000030,inset 0 1px 0 #ffffff0b;
+      animation:enter .4s ease-out both;
+    }
+    .label { display:flex; align-items:center; gap:7px; color:var(--mint); font-size:9px;
+      font-weight:700; letter-spacing:2px; margin-bottom:15px; }
+    .label::before { content:""; width:5px; height:5px; border-radius:50%; background:var(--mint);
+      box-shadow:0 0 10px #69f5d166; }
+    #video-title { font-size:18px; font-weight:650; letter-spacing:-.4px; line-height:1.45;
+      overflow-wrap:anywhere; max-height:104px; overflow:auto; scrollbar-width:thin; }
+    #connection { min-height:28px; margin-top:9px; color:var(--muted); font-size:11px; line-height:1.5; }
+    .row { display:flex; gap:9px; margin-top:19px; }
+    button {
+      min-height:42px; padding:11px 13px; border:1px solid #ffffff16; border-radius:12px;
+      font:600 12px "Segoe UI",Arial,sans-serif; color:var(--text); background:#ffffff07;
+      cursor:pointer; transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .22s ease;
+    }
+    .row button { flex:1; }
+    button:hover:not(:disabled) { transform:translateY(-2px); background:#ffffff10; border-color:#ffffff35; box-shadow:0 5px 15px #00000020; }
+    button:active:not(:disabled) { transform:translateY(0) scale(.97); }
+    button:focus-visible,input:focus-visible { outline:2px solid var(--mint); outline-offset:4px; }
+    button:disabled { opacity:.4; cursor:not-allowed; }
+    #play-pause { flex:1.5; color:#082b26; background:linear-gradient(120deg,#8bffe0,#52d7c6);
+      border-color:#b1ffe3a0; box-shadow:0 4px 20px #53eac51c; min-height:48px; font-size:14px; }
+    #play-pause:hover:not(:disabled) { background:linear-gradient(120deg,#b0ffe9,#6de6d6); box-shadow:0 5px 25px #53eac53d; }
+    .volume-row { display:flex; align-items:center; gap:10px; margin-top:25px; font-size:11px; color:var(--muted); }
+    #volume { flex:1; min-width:0; height:20px; margin:0; accent-color:var(--mint); cursor:pointer; }
+    #volume::-moz-range-track { height:4px; background:#ffffff16; border-radius:5px; }
+    #volume::-moz-range-progress { height:4px; background:var(--mint); border-radius:5px; box-shadow:0 0 8px #69f5d12b; }
+    #volume::-moz-range-thumb { width:12px; height:12px; border:2px solid #d4fff3; border-radius:50%; background:var(--mint); box-shadow:0 0 12px #69f5d14d; }
+    #volume:disabled { opacity:.4; cursor:default; }
+    #volume-value { width:35px; text-align:right; color:var(--text); font-variant-numeric:tabular-nums; }
+    .utilities { padding-top:16px; border-top:1px solid #ffffff0b; margin-top:22px; }
+    .utilities button { font-size:11px; color:#c3cde0; min-height:36px; padding:8px; }
+    #remote-status { color:var(--mint); font-size:11px; line-height:1.5; min-height:24px; padding:4px 3px; overflow-wrap:anywhere; }
+    .download-heading { display:flex; justify-content:space-between; align-items:center; margin:13px 2px 10px;
+      color:var(--muted); font-size:9px; font-weight:600; letter-spacing:1.6px; }
+    .quality { color:#c2adff; border:1px solid #b8a0ff2b; background:#b8a0ff0a; border-radius:5px; padding:3px 5px; letter-spacing:.6px; }
+    #download {
+      width:100%; position:relative; overflow:hidden; min-height:47px; border-radius:13px;
+      color:#eee7ff; background:linear-gradient(120deg,#9b75ff20,#728bff10);
+      border:1px solid #b99aff4a; box-shadow:inset 0 1px 0 #ffffff08;
+    }
+    #download::after { content:""; position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(110deg,transparent 20%,#ffffff16 50%,transparent 80%);
+      transform:translateX(-120%); transition:transform .65s ease; }
+    #download:hover:not(:disabled) { border-color:#c0a4ff99; background:#a987ff22; box-shadow:0 0 22px #a781ff20; }
+    #download:hover:not(:disabled)::after { transform:translateX(120%); }
+    #status { font-size:11px; line-height:1.6; color:var(--muted); margin:11px 3px 3px;
+      max-height:80px; overflow:auto; overflow-wrap:anywhere; scrollbar-width:thin; }
+    @keyframes enter { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation:none!important; transition:none!important; }
+      button:hover:not(:disabled),button:active:not(:disabled) { transform:none; }
+    }
+    html,
+body,
+body * {
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Prevent horizontal overflow. */
+html {
+  width: 370px;
+  overflow-x: hidden;
+}
+
+body {
+  width: 100%;
+  max-width: 370px;
+  overflow-x: hidden;
+}
+
+.card,
+.row,
+.volume-row {
+  min-width: 0;
+}
+
+#video-title,
+#connection,
+#status,
+#remote-status {
+  overflow-wrap: anywhere;
+}
+  </style>
+</head>
+<body>
+  <header class="brand">
+    <div class="brand-mark" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 10v4m4-8v12m4-15v18m4-15v12m4-8v4"/></svg></div>
+    <div><h2>YouTube Remote</h2><p class="brand-sub">Your sound. Within reach.</p></div>
+  </header>
+
+  <div class="card">
+    <div class="label">NOW PLAYING</div>
+    <div id="video-title">Finding YouTube...</div>
+    <div id="connection">Searching open tabs</div>
+
+    <div class="row">
+      <button id="play-pause" disabled>Play</button>
+      <button id="next" disabled>Next ⏭</button>
+    </div>
+
+    <div class="volume-row">
+      <label for="volume">Volume</label>
+      <input id="volume" type="range" min="0" max="100"
+             step="1" value="100" disabled>
+      <span id="volume-value">100%</span>
+    </div>
+
+    <div class="row utilities">
+      <button id="copy-link" disabled>Copy Link</button>
+      <button id="refresh">Refresh</button>
+    </div>
+  </div>
+
+  <div id="remote-status" role="status" aria-live="polite"></div>
+
+  <div class="download-heading"><span>TAKE IT WITH YOU</span><span class="quality">MP3 / 320</span></div>
+  <button id="download">Download MP3 — 320 kbps</button>
+  <div id="status" role="status" aria-live="polite">Ready to download.</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

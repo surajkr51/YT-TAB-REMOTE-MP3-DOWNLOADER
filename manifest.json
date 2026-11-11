@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Remote + MP3",
+  "version": "1.2",
+  "description": "Control YouTube from any tab and start MP3 downloads.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://*.youtube.com/*",
+    "https://www-y2mate.com/*",
+    "https://*.www-y2mate.com/*",
+    "https://iframe.y2meta-uk.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "action": {
+    "default_popup": "/popup/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.youtube.com/*"
+      ],
+      "js": [
+        "youtube-remote.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www-y2mate.com/*",
+        "https://*.www-y2mate.com/*",
+        "https://iframe.y2meta-uk.com/*"
+      ],
+      "js": [
+        "y2mate.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}
